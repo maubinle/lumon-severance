@@ -177,7 +177,7 @@ function App() {
     const shuffledCommendations = [...commendations].sort(() => Math.random() - 0.5);
 
     const profile = {
-      name: formData.name + ' R.',
+      name: formData.name,
       employeeId,
       employeeNumber: totalSevered + 1,
       department: dept,
@@ -355,24 +355,22 @@ function App() {
                   animation: 'glow 4s ease-in-out infinite'
                 }}
               />
-              <h1 className="text-5xl font-bold text-slate-800 mb-4 tracking-wide">LUMON INDUSTRIES</h1>
               <div className="w-24 h-1 bg-blue-900 mx-auto mb-6"></div>
-              <p className="text-xl text-slate-600 italic">Severance Program</p>
+              <p className="text-xl text-slate-600 italic">Severance Program Intake Form</p>
             </div>
 
             <div className="bg-blue-900 bg-opacity-10 border-l-4 border-blue-900 p-6 mb-8">
-              <h2 className="text-2xl font-bold text-slate-800 mb-4">
-                Interested in work-life balance?
+              <h2 className="text-3xl font-extrabold text-slate-900 mb-6">
+                Want a better work-life balance?
               </h2>
-              <p className="text-slate-700 text-lg leading-relaxed mb-4">
-                At Lumon Industries, we believe your work self and your home self should be separate. 
-                Through our revolutionary severance procedure, your work stays at work, and your life stays at home.
+              <p className="text-slate-700 text-lg leading-relaxed mb-5">
+                At Lumon Industries, we make it possible. Our revolutionary severance procedure separates your work self from your home self, so you can fully enjoy your life outside the office.
               </p>
-              <p className="text-slate-700 text-lg leading-relaxed mb-4">
-                Join our team of dedicated employees who have found perfect balance through severance.
+              <p className="text-slate-700 text-lg leading-relaxed mb-5">
+                No interruptions. No stress. Just focus on living the life you’ve always wanted.
               </p>
               <p className="text-slate-600 italic text-base">
-                The work is mysterious and important.
+                Join Lumon Industries and experience the freedom of true work-life balance.
               </p>
             </div>
 
