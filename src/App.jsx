@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Camera, Download, Users } from 'lucide-react';
+import './App.css';
 
 function App() {
   const [screen, setScreen] = useState('welcome');
@@ -33,17 +34,51 @@ function App() {
   const departments = [
     'Macrodata Refinement',
     'Optics & Design',
-    'Wellness',
-    'Management',
-    'Records'
+    'Wellness Center',
+    'Mammalians Nurturable',
+    'Security Office',
+    'Choreography and Merriment'
   ];
 
   const roles = {
-    'Macrodata Refinement': ['Senior Refiner', 'Junior Refiner', 'Data Sorter', 'Department Head'],
-    'Optics & Design': ['Chief Designer', 'Visual Specialist', 'Aesthetic Coordinator'],
-    'Wellness': ['Wellness Counselor', 'Morale Officer'],
-    'Management': ['Division Chief', 'Supervisor', 'Compliance Officer'],
-    'Records': ['Archivist', 'File Keeper', 'Documentation Specialist']
+    'Macrodata Refinement': [
+      'Senior Refiner',
+      'Junior Refiner',
+      'Data Sorter',
+      'Numbers Interpreter',
+      'Department Head'
+    ],
+    'Optics & Design': [
+      'Chief Designer',
+      'Visual Specialist',
+      'Aesthetic Coordinator',
+      'Color Harmonizer',
+      'Office Decorator'
+    ],
+    'Wellness Center': [
+      'Wellness Counselor',
+      'Morale Officer',
+      'Self-Awareness Liaison',
+      'Balance Technician'
+    ],
+    'Mammalians Nurturable': [
+      'Lead Caretaker',
+      'Junior Feeder',
+      'Emotional Support Facilitator',
+      'Cub Comforter'
+    ],
+    'Security Office': [
+      'Division Chief of Security',
+      'Compliance Officer',
+      'Surveillance Specialist',
+      'Corridor Patrol Associate'
+    ],
+    'Choreography and Merriment': [
+      'Chief of Merriment',
+      'Choreography Consultant',
+      'Dance Captain',
+      'Revelry Coordinator'
+    ]
   };
 
   const areasForImprovement = [
@@ -75,6 +110,83 @@ function App() {
     "Finds meaning in the work itself",
     "Worthy of Kier's eternal regard"
   ];
+
+  const incentives = [
+    {
+      name: "Five-Minute Music Dance Experience",
+      description: "Partner with a member of Choreography & Merriment for a brief, sanctioned dance. Smiling is mandatory.",
+      requires: "Choreography and Merriment"
+    },
+    {
+      name: "Affirmation Session",
+      description: "Receive three corporate-approved compliments from a Wellness Counselor.",
+      requires: "Wellness Center"
+    },
+    {
+      name: "Portrait Time",
+      description: "Have your likeness drawn by a member of Optics & Design. You must thank Kier afterward.",
+      requires: "Optics & Design"
+    },
+    {
+      name: "Animal Observation Break",
+      description: "Join an MN employee to observe or nurture a small mammal (real or plush).",
+      requires: "Mammalians Nurturable"
+    },
+    {
+      name: "Security Escort of Honor",
+      description: "Be ceremoniously escorted across the room by a Security Officer while others applaud your compliance.",
+      requires: "Security Office"
+    },
+    {
+      name: "Data Harmony Review",
+      description: "Sit with a refiner who will solemnly assess your data purity level.",
+      requires: "Macrodata Refinement"
+    },
+    {
+      name: "Praise from Management",
+      description: "Receive a formal commendation from a designated Department Head.",
+      requires: "Any Department"
+    }
+  ];
+
+  const sanctions = [
+    {
+      name: "Mandatory Wellness Debrief",
+      description: "Report to a Wellness Counselor to confess your latest noncompliant thought.",
+      requires: "Wellness Center"
+    },
+    {
+      name: "Visual Reeducation",
+      description: "Be shown an abstract image by an O&D member and describe what emotion Kier intended it to evoke.",
+      requires: "Optics & Design"
+    },
+    {
+      name: "Choreographed Repentance",
+      description: "Perform a synchronized penance dance directed by a C&M employee. Include at least one twirl.",
+      requires: "Choreography and Merriment"
+    },
+    {
+      name: "Animal Reflection Session",
+      description: "Pet or comfort a stuffed mammal while reciting a Lumon Value.",
+      requires: "Mammalians Nurturable"
+    },
+    {
+      name: "Hallway Reflection",
+      description: "Stand silently under guard for 30 seconds while contemplating your error.",
+      requires: "Security Office"
+    },
+    {
+      name: "Data Reclassification Duty",
+      description: "Sit with a refiner who reassigns you to a lower data purity tier. Nod solemnly.",
+      requires: "Macrodata Refinement"
+    },
+    {
+      name: "Management Correction",
+      description: "Receive a verbal reprimand from a Department Head. Respond: 'Thank you for my correction.'",
+      requires: "Any Department"
+    }
+  ];
+
 
   const kierQuotes = [
     "I walked into the cave of my own mind, and there I tamed them.",
@@ -148,15 +260,16 @@ function App() {
     } else if (formData.q1 === 'beauty' || formData.q4 === 'creativity') {
       return 'Optics & Design';
     } else if (formData.q2 === 'context' || formData.q5 === 'guide') {
-      return 'Wellness';
+      return 'Wellness Center';
     } else if (formData.q2 === 'follow' && formData.q5 === 'obey') {
-      return 'Management';
+      return 'Choreography and Merrimentt';
     } else {
       return departments[Math.floor(Math.random() * departments.length)];
     }
   };
 
   const generateProfile = (capturedPhoto = null) => {
+
     const dept = calculateDepartment();
     const rolesList = roles[dept];
     const role = rolesList[Math.floor(Math.random() * rolesList.length)];
@@ -189,6 +302,8 @@ function App() {
       quotasMet,
       improvements: shuffledImprovements.slice(0, 2 + Math.floor(Math.random() * 2)),
       commendations: shuffledCommendations.slice(0, 1 + Math.floor(Math.random() * 2)),
+      incentive: incentives[Math.floor(Math.random() * incentives.length)],
+      sanction: sanctions[Math.floor(Math.random() * sanctions.length)],
       quote,
       photo: capturedPhoto,
       timestamp: new Date().toISOString()
@@ -201,42 +316,68 @@ function App() {
     setTotalSevered(updatedEmployees.length);
   };
 
+  const wrapText = (ctx, text, x, y, maxWidth, lineHeight) => {
+    const words = text.split(' ');
+      let line = '';
+      let currentY = y;
+      
+      words.forEach(word => {
+        const testLine = line + word + ' ';
+        const metrics = ctx.measureText(testLine);
+        
+        if (metrics.width > maxWidth && line.length > 0) {
+          ctx.fillText(line.trim(), x, currentY);
+          line = word + ' ';
+          currentY += lineHeight;
+        } else {
+          line = testLine;
+        }
+      });
+    
+      ctx.fillText(line.trim(), x, currentY);
+      return currentY + lineHeight;
+    };
+
   const downloadIDCard = () => {
     const canvas = document.createElement('canvas');
     canvas.width = 700;
-    canvas.height = 900;
+    canvas.height = 1100;
     const ctx = canvas.getContext('2d');
 
+    // Background
     ctx.fillStyle = '#E8E4D9';
-    ctx.fillRect(0, 0, 700, 900);
+    ctx.fillRect(0, 0, 700, 1100);
 
+    // Header with logo
     ctx.fillStyle = '#2C5F8D';
-    ctx.fillRect(0, 0, 700, 100);
+    ctx.fillRect(0, 0, 700, 120);
 
-    ctx.fillStyle = '#ffffff';
-    ctx.font = 'bold 36px Arial';
-    ctx.fillText('LUMON INDUSTRIES', 40, 60);
-
+    // Load and draw logo
+    const logo = new Image();
+    logo.crossOrigin = 'anonymous';
+    
     const drawRestOfCard = () => {
+      // Employee info header
       ctx.fillStyle = '#000000';
       ctx.font = 'bold 28px Arial';
-      ctx.fillText(employeeProfile.name, 240, 155);
+      ctx.fillText(employeeProfile.name, 240, 175);
 
       ctx.font = '18px Arial';
       ctx.fillStyle = '#333333';
-      ctx.fillText(`ID: ${employeeProfile.employeeId}`, 240, 185);
-      ctx.fillText(`Severance #${employeeProfile.employeeNumber}`, 240, 215);
-      ctx.fillText(employeeProfile.role, 240, 245);
-      ctx.fillText(employeeProfile.department, 240, 275);
+      ctx.fillText(`ID: ${employeeProfile.employeeId}`, 240, 205);
+      ctx.fillText(`Severance #${employeeProfile.employeeNumber}`, 240, 235);
+      ctx.fillText(employeeProfile.role, 240, 265);
+      ctx.fillText(employeeProfile.department, 240, 295);
 
+      // Performance Metrics
       ctx.fillStyle = '#2C5F8D';
       ctx.font = 'bold 22px Arial';
-      ctx.fillText('PERFORMANCE METRICS', 40, 340);
+      let yPos = 350;
+      ctx.fillText('PERFORMANCE METRICS', 40, yPos);
 
       ctx.fillStyle = '#333333';
       ctx.font = '16px Arial';
-      
-      let yPos = 375;
+      yPos += 35;
       ctx.fillText(`Reports to: ${employeeProfile.reportsTo || 'The Board'}`, 40, yPos);
       yPos += 30;
       ctx.fillText(`Files Refined: ${employeeProfile.fragmentsProcessed}`, 40, yPos);
@@ -247,42 +388,94 @@ function App() {
       yPos += 30;
       ctx.fillText(`Compliance Rating: ${employeeProfile.complianceScore}%`, 40, yPos);
 
+      // Commendations Box (Green)
       yPos += 50;
-      ctx.fillStyle = '#2C5F8D';
+      ctx.fillStyle = 'rgba(22, 163, 74, 0.1)';
+      ctx.fillRect(35, yPos - 10, 630, 35);
+      
+      ctx.fillStyle = '#15803d';
       ctx.font = 'bold 22px Arial';
-      ctx.fillText('COMMENDATIONS', 40, yPos);
+      ctx.fillText('✓ COMMENDATIONS', 40, yPos + 15);
       
       ctx.fillStyle = '#1A5F3A';
       ctx.font = '15px Arial';
-      yPos += 30;
+      yPos += 45;
       employeeProfile.commendations.forEach(comm => {
-        ctx.fillText(`✓ ${comm}`, 40, yPos);
+        ctx.fillText(`✓ ${comm}`, 50, yPos);
         yPos += 25;
       });
 
-      yPos += 25;
-      ctx.fillStyle = '#2C5F8D';
+      // Incentive Earned (within green section)
+      yPos += 15;
+      ctx.fillStyle = 'rgba(22, 163, 74, 0.2)';
+      ctx.fillRect(35, yPos - 10, 630, 95);
+      
+      ctx.fillStyle = '#15803d';
+      ctx.font = 'bold 18px Arial';
+      ctx.fillText('→ INCENTIVE EARNED', 45, yPos + 15);
+
+      yPos += 40;
+      ctx.fillStyle = '#166534';
+      ctx.font = '16px Arial';
+      ctx.fillText(employeeProfile.incentive.name, 45, yPos);
+      yPos += 22;
+      ctx.fillStyle = '#333333';
+      ctx.font = '14px Arial';
+      yPos = wrapText(ctx, employeeProfile.incentive.description, 45, yPos, 610, 20);
+      yPos += 5;
+      ctx.fillStyle = '#666666';
+      ctx.font = 'italic 12px Arial';
+      ctx.fillText(`Requires: ${employeeProfile.incentive.requires}`, 45, yPos);
+
+      // Areas for Improvement Box (Amber)
+      yPos += 35;
+      ctx.fillStyle = 'rgba(217, 119, 6, 0.1)';
+      ctx.fillRect(35, yPos - 10, 630, 35);
+      
+      ctx.fillStyle = '#92400e';
       ctx.font = 'bold 22px Arial';
-      ctx.fillText('AREAS FOR IMPROVEMENT', 40, yPos);
+      ctx.fillText('⚠ AREAS FOR IMPROVEMENT', 40, yPos + 15);
       
       ctx.fillStyle = '#8B6914';
       ctx.font = '15px Arial';
-      yPos += 30;
+      yPos += 45;
       employeeProfile.improvements.forEach(imp => {
-        ctx.fillText(`• ${imp}`, 40, yPos);
+        ctx.fillText(`• ${imp}`, 50, yPos);
         yPos += 25;
       });
 
+      // Sanction Pending (within red section)
+      yPos += 15;
+      ctx.fillStyle = 'rgba(220, 38, 38, 0.1)';
+      ctx.fillRect(35, yPos - 10, 630, 95);
+      
+      ctx.fillStyle = '#991b1b';
+      ctx.font = 'bold 18px Arial';
+      ctx.fillText('→ SANCTION PENDING', 45, yPos + 15);
+
+      yPos += 40;
+      ctx.fillStyle = '#7f1d1d';
+      ctx.font = '16px Arial';
+      ctx.fillText(employeeProfile.sanction.name, 45, yPos);
+      yPos += 22;
+      ctx.fillStyle = '#333333';
+      ctx.font = '14px Arial';
+      yPos = wrapText(ctx, employeeProfile.sanction.description, 45, yPos, 610, 20);
+      yPos += 5;
+      ctx.fillStyle = '#666666';
+      ctx.font = 'italic 12px Arial';
+      ctx.fillText(`Requires: ${employeeProfile.sanction.requires}`, 45, yPos);
+
+      // Kier Quote
       yPos += 35;
       ctx.fillStyle = '#666666';
       ctx.font = 'italic 14px Arial';
-      const maxWidth = 620;
       const words = employeeProfile.quote.split(' ');
       let line = '';
       words.forEach(word => {
         const testLine = line + word + ' ';
         const metrics = ctx.measureText(testLine);
-        if (metrics.width > maxWidth) {
+        if (metrics.width > 620) {
           ctx.fillText(line, 40, yPos);
           line = word + ' ';
           yPos += 20;
@@ -291,51 +484,84 @@ function App() {
         }
       });
       ctx.fillText(line, 40, yPos);
-      yPos += 5;
+      yPos += 22;
       ctx.fillText('— Kier Eagan', 40, yPos);
 
-      try {
-        canvas.toBlob((blob) => {
-          if (blob) {
-            const url = URL.createObjectURL(blob);
-            const link = document.createElement('a');
-            link.download = `lumon-employee-${employeeProfile.employeeId}.png`;
-            link.href = url;
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            URL.revokeObjectURL(url);
-          }
-        }, 'image/png');
-      } catch (err) {
-        console.error('Download error:', err);
-        alert('Download failed. Please try again or check browser permissions.');
-      }
+      // Export
+      canvas.toBlob((blob) => {
+        if (blob) {
+          const url = URL.createObjectURL(blob);
+          const link = document.createElement('a');
+          link.download = `lumon-employee-${employeeProfile.employeeId}.png`;
+          link.href = url;
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          URL.revokeObjectURL(url);
+        }
+      }, 'image/png');
     };
 
+    // Draw photo if exists
     if (employeeProfile.photo) {
       const img = new Image();
       img.onload = () => {
-        ctx.drawImage(img, 40, 120, 180, 180);
-        drawRestOfCard();
+        ctx.drawImage(img, 40, 140, 180, 180);
+        
+        // Try to load logo
+        logo.onload = () => {
+          ctx.drawImage(logo, 20, 20, 80, 80);
+          drawRestOfCard();
+        };
+        logo.onerror = () => {
+          // Draw LUMON text if logo fails
+          ctx.fillStyle = '#ffffff';
+          ctx.font = 'bold 32px Arial';
+          ctx.fillText('LUMON', 30, 70);
+          drawRestOfCard();
+        };
+        logo.src = '/lumon-severance/lumon-logo.jpg';
       };
       img.onerror = () => {
-        console.error('Image load error');
         ctx.fillStyle = '#cccccc';
-        ctx.fillRect(40, 120, 180, 180);
+        ctx.fillRect(40, 140, 180, 180);
         ctx.fillStyle = '#666666';
         ctx.font = '16px Arial';
-        ctx.fillText('NO PHOTO', 80, 210);
-        drawRestOfCard();
+        ctx.fillText('NO PHOTO', 80, 230);
+        
+        // Try to load logo
+        logo.onload = () => {
+          ctx.drawImage(logo, 20, 20, 80, 80);
+          drawRestOfCard();
+        };
+        logo.onerror = () => {
+          ctx.fillStyle = '#ffffff';
+          ctx.font = 'bold 32px Arial';
+          ctx.fillText('LUMON', 30, 70);
+          drawRestOfCard();
+        };
+        logo.src = '/lumon-severance/lumon-logo.jpg';
       };
       img.src = employeeProfile.photo;
     } else {
       ctx.fillStyle = '#cccccc';
-      ctx.fillRect(40, 120, 180, 180);
+      ctx.fillRect(40, 140, 180, 180);
       ctx.fillStyle = '#666666';
       ctx.font = '16px Arial';
-      ctx.fillText('NO PHOTO', 80, 210);
-      drawRestOfCard();
+      ctx.fillText('NO PHOTO', 80, 230);
+      
+      // Try to load logo
+      logo.onload = () => {
+        ctx.drawImage(logo, 20, 20, 80, 80);
+        drawRestOfCard();
+      };
+      logo.onerror = () => {
+        ctx.fillStyle = '#ffffff';
+        ctx.font = 'bold 32px Arial';
+        ctx.fillText('LUMON', 30, 70);
+        drawRestOfCard();
+      };
+      logo.src = '/lumon-severance/lumon-logo.jpg';
     }
   };
 
@@ -370,7 +596,7 @@ function App() {
                 No interruptions. No stress. Just focus on living the life you’ve always wanted.
               </p>
               <p className="text-slate-600 italic text-base">
-                Join Lumon Industries and experience the freedom of true work-life balance.
+                Join Lumon Industries today to experience the freedom of true work-life balance.
               </p>
             </div>
 
@@ -409,6 +635,14 @@ function App() {
       {screen === 'intake' && (
         <div className="flex flex-col items-center justify-center min-h-screen p-8">
           <div className="max-w-2xl w-full bg-stone-50 shadow-2xl border border-stone-300 p-12">
+            <img
+                src="/lumon-severance/lumon-logo.jpg"
+                alt="Lumon Industries"
+                className="h-20 w-auto mx-auto mb-6"
+                style={{
+                  animation: 'glow 4s ease-in-out infinite'
+                }}
+              />
             <h2 className="text-3xl font-bold text-slate-800 mb-2">Temper Assessment Protocol</h2>
             <p className="text-slate-600 mb-8">Help us determine which of the Four Tempers guide your soul</p>
             
@@ -682,9 +916,12 @@ function App() {
                 </div>
               </div>
 
-              <div className="mb-6">
-                <h4 className="font-bold text-green-800 mb-3 text-lg">Commendations:</h4>
-                <ul className="space-y-2">
+              {/* Commendations + Incentive Coupling */}
+              <div className="bg-green-50 border-2 border-green-700 p-6 mb-6">
+                <h4 className="font-bold text-green-800 mb-3 text-xl flex items-center gap-2">
+                  <span>✓</span> Commendations
+                </h4>
+                <ul className="space-y-2 mb-6">
                   {employeeProfile.commendations.map((comm, i) => (
                     <li key={i} className="flex items-start">
                       <span className="text-green-700 mr-2">✓</span>
@@ -692,11 +929,25 @@ function App() {
                     </li>
                   ))}
                 </ul>
+                
+                <div className="border-t-2 border-green-600 pt-4 mt-4 bg-green-100 -m-6 mt-4 p-6">
+                  <h5 className="font-bold text-green-900 mb-2 text-sm uppercase tracking-wide">
+                    → Incentive Earned
+                  </h5>
+                  <p className="font-semibold text-green-900 mb-2">{employeeProfile.incentive.name}</p>
+                  <p className="text-slate-700 text-sm mb-2">{employeeProfile.incentive.description}</p>
+                  <p className="text-xs text-slate-600 italic bg-white bg-opacity-50 p-2 rounded">
+                    Requires interaction with: <span className="font-semibold">{employeeProfile.incentive.requires}</span>
+                  </p>
+                </div>
               </div>
 
-              <div>
-                <h4 className="font-bold text-amber-900 mb-3 text-lg">Areas for Improvement:</h4>
-                <ul className="space-y-2">
+              {/* Areas for Improvement + Sanction Coupling */}
+              <div className="bg-amber-50 border-2 border-amber-700 p-6">
+                <h4 className="font-bold text-amber-900 mb-3 text-xl flex items-center gap-2">
+                  <span>⚠</span> Areas for Improvement
+                </h4>
+                <ul className="space-y-2 mb-6">
                   {employeeProfile.improvements.map((imp, i) => (
                     <li key={i} className="flex items-start">
                       <span className="text-amber-700 mr-2">•</span>
@@ -704,6 +955,17 @@ function App() {
                     </li>
                   ))}
                 </ul>
+                
+                <div className="border-t-2 border-red-600 pt-4 mt-4 bg-red-50 -m-6 mt-4 p-6">
+                  <h5 className="font-bold text-red-900 mb-2 text-sm uppercase tracking-wide">
+                    → Sanction Pending
+                  </h5>
+                  <p className="font-semibold text-red-900 mb-2">{employeeProfile.sanction.name}</p>
+                  <p className="text-slate-700 text-sm mb-2">{employeeProfile.sanction.description}</p>
+                  <p className="text-xs text-slate-600 italic bg-white bg-opacity-50 p-2 rounded">
+                    Requires interaction with: <span className="font-semibold">{employeeProfile.sanction.requires}</span>
+                  </p>
+                </div>
               </div>
             </div>
 
