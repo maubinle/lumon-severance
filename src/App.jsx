@@ -1,5 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Camera, Download, Users } from 'lucide-react';
+import { ref, push, set, onValue, get } from 'firebase/database';
+import { database } from './firebase';
 import './App.css';
 
 function App() {
@@ -22,15 +24,35 @@ function App() {
   const [cameraActive, setCameraActive] = useState(false);
   const [stream, setStream] = useState(null);
 
-  useEffect(() => {
-    const stored = sessionStorage.getItem('lumonEmployees');
-    if (stored) {
-      const employees = JSON.parse(stored);
-      setAllEmployees(employees);
-      setTotalSevered(employees.length);
-    }
-  }, []);
+  // useEffect(() => {
+  //   const stored = sessionStorage.getItem('lumonEmployees');
+  //   if (stored) {
+  //     const employees = JSON.parse(stored);
+  //     setAllEmployees(employees);
+  //     setTotalSevered(employees.length);
+  //   }
+  // }, []);
 
+  useEffect(() => {
+    const employeesRef = ref(database, 'employees');
+    
+    // Listen for real-time updates
+    const unsubscribe = onValue(employeesRef, (snapshot) => {
+      const data = snapshot.val();
+      if (data) {
+        const employeeList = Object.values(data);
+        setAllEmployees(employeeList);
+        setTotalSevered(employeeList.length);
+      } else {
+        setAllEmployees([]);
+        setTotalSevered(0);
+      }
+    });
+
+    // Cleanup listener on unmount
+    return () => unsubscribe();
+  }, []);
+  
   const departments = [
     'Macrodata Refinement',
     'Optics & Design',
@@ -268,11 +290,22 @@ function App() {
     }
   };
 
-  const generateProfile = (capturedPhoto = null) => {
+
+  const generateProfile = async (capturedPhoto = null) => {
+    // Get current count from Firebase
+    const employeesRef = ref(database, 'employees');
+    const snapshot = await get(employeesRef);
+    const currentCount = snapshot.exists() ? Object.keys(snapshot.val()).length : 0;
 
     const dept = calculateDepartment();
     const rolesList = roles[dept];
     const role = rolesList[Math.floor(Math.random() * rolesList.length)];
+    // const generateProfile = (capturedPhoto = null) => {
+    // const generateProfile = async (capturedPhoto = null) => {
+
+    // const dept = calculateDepartment();
+    // const rolesList = roles[dept];
+    // const role = rolesList[Math.floor(Math.random() * rolesList.length)];
 
     const isManager = allEmployees.length < 3 || Math.random() > 0.7;
     const reportsTo = !isManager && allEmployees.length > 0
@@ -292,7 +325,7 @@ function App() {
     const profile = {
       name: formData.name,
       employeeId,
-      employeeNumber: totalSevered + 1,
+      employeeNumber: currentCount + 1,
       department: dept,
       role,
       reportsTo,
@@ -309,12 +342,21 @@ function App() {
       timestamp: new Date().toISOString()
     };
 
-    setEmployeeProfile(profile);
-    const updatedEmployees = [...allEmployees, profile];
-    sessionStorage.setItem('lumonEmployees', JSON.stringify(updatedEmployees));
-    setAllEmployees(updatedEmployees);
-    setTotalSevered(updatedEmployees.length);
+  //   setEmployeeProfile(profile);
+  //   const updatedEmployees = [...allEmployees, profile];
+  //   sessionStorage.setItem('lumonEmployees', JSON.stringify(updatedEmployees));
+  //   setAllEmployees(updatedEmployees);
+  //   setTotalSevered(updatedEmployees.length);
+  // };
+
+  setEmployeeProfile(profile);
+
+// Save to Firebase
+  // const employeesRef = ref(database, 'employees');
+  const newEmployeeRef = push(employeesRef);
+  await set(newEmployeeRef, profile);
   };
+
 
   const wrapText = (ctx, text, x, y, maxWidth, lineHeight) => {
     const words = text.split(' ');
