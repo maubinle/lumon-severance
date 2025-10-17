@@ -13,6 +13,7 @@
   },
   "homepage": "https://maubinle.github.io/lumon-severance",
   "dependencies": {
+    "@emailjs/browser": "^4.4.1",
     "react": "^19.1.1",
     "react-dom": "^19.1.1"
   },

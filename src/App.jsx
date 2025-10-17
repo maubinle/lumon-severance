@@ -21,6 +21,10 @@ function App() {
   const [totalSevered, setTotalSevered] = useState(0);
   const [calculating, setCalculating] = useState(false);
   const [viewingEmployee, setViewingEmployee] = useState(null);
+  const [passwordInput, setPasswordInput] = useState('');
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+
+  const ADMIN_PASSWORD = 'marianne1995';
   
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
@@ -449,6 +453,92 @@ function App() {
       return currentY + lineHeight;
     };
 
+const promoteEmployee = async (employeeId) => {
+  const employee = allEmployees.find(e => e.employeeId === employeeId);
+  if (!employee) return;
+
+  let newManager = null;
+  
+  if (employee.reportsTo) {
+    const currentManager = allEmployees.find(e => e.name === employee.reportsTo);
+    if (currentManager && currentManager.reportsTo) {
+      newManager = currentManager.reportsTo;
+    } else {
+      newManager = null;
+    }
+  }
+  
+  const employeesRef = ref(database, 'employees');
+  const snapshot = await get(employeesRef);
+  if (snapshot.exists()) {
+    const employees = snapshot.val();
+    const employeeKey = Object.keys(employees).find(
+      key => employees[key].employeeId === employeeId
+    );
+    
+    if (employeeKey) {
+      const employeeRef = ref(database, `employees/${employeeKey}`);
+      await set(employeeRef, {
+        ...employees[employeeKey],
+        reportsTo: newManager
+      });
+    }
+  }
+};
+
+const demoteEmployee = async (employeeId) => {
+  const employee = allEmployees.find(e => e.employeeId === employeeId);
+  if (!employee) return;
+
+  let newManager = null;
+  
+  if (!employee.reportsTo) {
+    const otherDeptHeads = allEmployees.filter(e => 
+      !e.reportsTo && 
+      e.employeeId !== employeeId
+    );
+    if (otherDeptHeads.length > 0) {
+      newManager = otherDeptHeads[0].name;
+    } else {
+      alert('Cannot demote - no available managers');
+      return;
+    }
+  } else {
+    const peers = allEmployees.filter(e => 
+      e.reportsTo === employee.reportsTo && 
+      e.employeeId !== employeeId
+    );
+    if (peers.length > 0) {
+      newManager = peers[0].name;
+    } else {
+      const subordinates = allEmployees.filter(e => e.reportsTo === employee.name);
+      if (subordinates.length > 0) {
+        newManager = subordinates[0].name;
+      } else {
+        alert('Cannot demote - no available managers');
+        return;
+      }
+    }
+  }
+  
+  const employeesRef = ref(database, 'employees');
+  const snapshot = await get(employeesRef);
+  if (snapshot.exists()) {
+    const employees = snapshot.val();
+    const employeeKey = Object.keys(employees).find(
+      key => employees[key].employeeId === employeeId
+    );
+    
+    if (employeeKey) {
+      const employeeRef = ref(database, `employees/${employeeKey}`);
+      await set(employeeRef, {
+        ...employees[employeeKey],
+        reportsTo: newManager
+      });
+    }
+  }
+};    
+
   const downloadIDCard = () => {
     const canvas = document.createElement('canvas');
     canvas.width = 700;
@@ -727,13 +817,22 @@ function App() {
               </button>
               
               {totalSevered > 0 && (
+              <>
                 <button
                   onClick={() => setScreen('orgchart')}
                   className="col-span-2 bg-slate-600 text-white py-3 px-6 text-base font-semibold hover:bg-slate-700 transition-colors"
                 >
                   VIEW SEVERED FLOOR DIRECTORY
                 </button>
-              )}
+                
+                <button
+                  onClick={() => setScreen('password')}
+                  className="col-span-2 bg-stone-700 text-white py-2 px-4 text-sm font-semibold hover:bg-stone-800 transition-colors"
+                >
+                  MANAGEMENT CONSOLE
+                </button>
+              </>
+            )}
             </div>
 
             <p className="text-center text-sm text-slate-500 mt-6 italic">
@@ -1150,6 +1249,126 @@ function App() {
             <p className="text-center text-xs text-slate-500 mt-6 italic">
               Your work self stays at work. Your life self stays at home.
             </p>
+          </div>
+        </div>
+      )}
+
+      {screen === 'password' && (
+        <div className="flex flex-col items-center justify-center min-h-screen p-8">
+          <div className="max-w-md w-full bg-stone-50 shadow-2xl border border-stone-300 p-12">
+            <h2 className="text-3xl font-bold text-slate-800 mb-6 text-center">MANAGEMENT CONSOLE</h2>
+            <p className="text-slate-600 mb-6 text-center">Enter authorization code</p>
+            
+            <input
+              type="password"
+              value={passwordInput}
+              onChange={(e) => setPasswordInput(e.target.value)}
+              onKeyPress={(e) => {
+                if (e.key === 'Enter') {
+                  if (passwordInput === ADMIN_PASSWORD) {
+                    setIsAuthenticated(true);
+                    setScreen('management');
+                    setPasswordInput('');
+                  } else {
+                    alert('Incorrect authorization code');
+                    setPasswordInput('');
+                  }
+                }
+              }}
+              className="w-full p-3 border border-stone-300 bg-white focus:border-blue-900 focus:outline-none mb-6 text-center text-2xl tracking-widest"
+              placeholder="••••••••"
+            />
+            
+            <button
+              onClick={() => {
+                if (passwordInput === ADMIN_PASSWORD) {
+                  setIsAuthenticated(true);
+                  setScreen('management');
+                  setPasswordInput('');
+                } else {
+                  alert('Incorrect authorization code');
+                  setPasswordInput('');
+                }
+              }}
+              className="w-full bg-blue-900 text-white py-3 px-6 font-semibold hover:bg-blue-800 transition-colors mb-3"
+            >
+              ACCESS CONSOLE
+            </button>
+            
+            <button
+              onClick={() => {
+                setScreen('welcome');
+                setPasswordInput('');
+              }}
+              className="w-full bg-stone-400 text-white py-2 px-4 hover:bg-stone-500 transition-colors"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
+
+      {screen === 'management' && isAuthenticated && (
+        <div className="flex flex-col items-center justify-center min-h-screen p-8">
+          <div className="max-w-4xl w-full bg-stone-50 shadow-2xl border border-stone-300 p-12">
+            <h2 className="text-3xl font-bold text-slate-800 mb-2 text-center">MANAGEMENT CONSOLE</h2>
+            <p className="text-slate-600 mb-8 text-center">Organizational Restructuring Interface</p>
+            
+            {allEmployees.length === 0 ? (
+              <p className="text-center text-slate-600">No employees to manage</p>
+            ) : (
+              <div className="space-y-4">
+                {allEmployees
+                  .sort((a, b) => {
+                    if (!a.reportsTo && b.reportsTo) return -1;
+                    if (a.reportsTo && !b.reportsTo) return 1;
+                    if (a.reportsTo === b.reportsTo) return a.name.localeCompare(b.name);
+                    return (a.reportsTo || '').localeCompare(b.reportsTo || '');
+                  })
+                  .map((emp) => (
+                    <div key={emp.employeeId} className="bg-white border-2 border-stone-300 p-4 flex items-center justify-between">
+                      <div className="flex items-center gap-4 flex-1">
+                        {emp.photo && (
+                          <img src={emp.photo} alt={emp.name} className="w-16 h-16 object-cover border-2 border-stone-400" />
+                        )}
+                        <div>
+                          <p className="font-bold text-slate-800">{emp.name}</p>
+                          <p className="text-sm text-slate-600">{emp.role}</p>
+                          <p className="text-xs text-slate-500">{emp.department}</p>
+                          <p className="text-xs text-blue-900 mt-1">
+                            {emp.reportsTo ? `Reports to: ${emp.reportsTo}` : 'Department Head'}
+                          </p>
+                        </div>
+                      </div>
+                      
+                      <div className="flex flex-col gap-2">
+                        <button
+                          onClick={() => promoteEmployee(emp.employeeId)}
+                          className="bg-green-700 text-white px-4 py-2 text-sm font-semibold hover:bg-green-800 transition-colors flex items-center gap-2"
+                        >
+                          ↑ PROMOTE
+                        </button>
+                        <button
+                          onClick={() => demoteEmployee(emp.employeeId)}
+                          className="bg-red-700 text-white px-4 py-2 text-sm font-semibold hover:bg-red-800 transition-colors flex items-center gap-2"
+                        >
+                          ↓ DEMOTE
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+              </div>
+            )}
+            
+            <button
+              onClick={() => {
+                setScreen('welcome');
+                setIsAuthenticated(false);
+              }}
+              className="w-full bg-blue-900 text-white py-3 px-6 font-semibold hover:bg-blue-800 transition-colors mt-8"
+            >
+              EXIT CONSOLE
+            </button>
           </div>
         </div>
       )}
