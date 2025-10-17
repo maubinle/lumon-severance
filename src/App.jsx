@@ -5,6 +5,7 @@ import { database } from './firebase';
 import './App.css';
 
 function App() {
+  
   const [screen, setScreen] = useState('welcome');
   const [formData, setFormData] = useState({
     name: '',
@@ -18,6 +19,8 @@ function App() {
   const [employeeProfile, setEmployeeProfile] = useState(null);
   const [allEmployees, setAllEmployees] = useState([]);
   const [totalSevered, setTotalSevered] = useState(0);
+  const [calculating, setCalculating] = useState(false);
+  const [viewingEmployee, setViewingEmployee] = useState(null);
   
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
@@ -61,6 +64,15 @@ function App() {
     'Security Office',
     'Choreography and Merriment'
   ];
+
+  const departmentDescriptions = {
+    'Macrodata Refinement': 'You possess the clarity of mind required to sort the unsortable. Numbers speak to you in ways others cannot comprehend.',
+    'Optics & Design': 'Your eye for beauty and harmony makes you essential to maintaining the aesthetic standards Kier envisioned.',
+    'Wellness Center': 'Your empathetic nature and understanding of the human condition make you a guide for those in need.',
+    'Mammalians Nurturable': 'Your gentle spirit and nurturing instincts are perfectly suited to care for our most delicate charges.',
+    'Security Office': 'Your vigilance and dedication to order make you a guardian of Lumon\'s sacred protocols.',
+    'Choreography and Merriment': 'Your devotion to structure and joy in movement make you perfect for orchestrating our sacred rituals.'
+  };
 
   const roles = {
     'Macrodata Refinement': [
@@ -248,7 +260,7 @@ function App() {
 
     if (video.videoWidth === 0 || video.videoHeight === 0) {
       console.error('Video not ready');
-      alert('Camera not ready yet — please wait a moment and try again.');
+      alert('Camera not ready yet – please wait a moment and try again.');
       return;
     }
 
@@ -267,27 +279,84 @@ function App() {
     }
 
     setCameraActive(false);
-    setScreen('results');
-    generateProfile(imageData);
+    
+    setScreen('calculating');
+    setCalculating(true);
+    setTimeout(() => {
+      generateProfile(imageData);
+      setCalculating(false);
+      setScreen('results');
+    }, 3000);
   };
 
-  const skipPhoto = () => {
-    setScreen('results');
-    generateProfile(null);
+ const skipPhoto = () => {
+    setScreen('calculating');
+    setCalculating(true);
+    setTimeout(() => {
+      generateProfile(null);
+      setCalculating(false);
+      setScreen('results');
+    }, 3000);
   };
 
   const calculateDepartment = () => {
-    if (formData.q1 === 'categorize' && formData.q3 === 'clarity') {
-      return 'Macrodata Refinement';
-    } else if (formData.q1 === 'beauty' || formData.q4 === 'creativity') {
-      return 'Optics & Design';
-    } else if (formData.q2 === 'context' || formData.q5 === 'guide') {
-      return 'Wellness Center';
-    } else if (formData.q2 === 'follow' && formData.q5 === 'obey') {
-      return 'Choreography and Merrimentt';
-    } else {
-      return departments[Math.floor(Math.random() * departments.length)];
+    const scores = {
+      'Macrodata Refinement': 0,
+      'Optics & Design': 0,
+      'Wellness Center': 0,
+      'Mammalians Nurturable': 0,
+      'Security Office': 0,
+      'Choreography and Merriment': 0
+    };
+
+    if (formData.q1 === 'categorize') scores['Macrodata Refinement'] += 3;
+    if (formData.q1 === 'beauty') scores['Optics & Design'] += 3;
+    if (formData.q1 === 'nurture') scores['Mammalians Nurturable'] += 3;
+    if (formData.q1 === 'secure') scores['Security Office'] += 3;
+
+    if (formData.q2 === 'follow') {
+      scores['Macrodata Refinement'] += 2;
+      scores['Choreography and Merriment'] += 2;
     }
+    if (formData.q2 === 'context') scores['Wellness Center'] += 3;
+    if (formData.q2 === 'protect') scores['Security Office'] += 2;
+    if (formData.q2 === 'feel') scores['Mammalians Nurturable'] += 2;
+
+    if (formData.q3 === 'embrace') {
+      scores['Choreography and Merriment'] += 2;
+      scores['Wellness Center'] += 1;
+    }
+    if (formData.q3 === 'clarity') scores['Macrodata Refinement'] += 3;
+    if (formData.q3 === 'vigilant') scores['Security Office'] += 3;
+    if (formData.q3 === 'beauty') scores['Optics & Design'] += 2;
+
+    if (formData.q4 === 'meditative') {
+      scores['Macrodata Refinement'] += 2;
+      scores['Choreography and Merriment'] += 1;
+    }
+    if (formData.q4 === 'creativity') scores['Optics & Design'] += 3;
+    if (formData.q4 === 'soothing') scores['Mammalians Nurturable'] += 3;
+    if (formData.q4 === 'control') scores['Security Office'] += 2;
+
+    if (formData.q5 === 'obey') {
+      scores['Choreography and Merriment'] += 3;
+      scores['Security Office'] += 1;
+    }
+    if (formData.q5 === 'guide') scores['Wellness Center'] += 3;
+    if (formData.q5 === 'protect') scores['Security Office'] += 2;
+    if (formData.q5 === 'care') scores['Mammalians Nurturable'] += 2;
+
+    let maxScore = 0;
+    let selectedDept = 'Macrodata Refinement';
+    
+    for (const [dept, score] of Object.entries(scores)) {
+      if (score > maxScore) {
+        maxScore = score;
+        selectedDept = dept;
+      }
+    }
+
+    return selectedDept;
   };
 
 
@@ -685,8 +754,8 @@ function App() {
                   animation: 'glow 4s ease-in-out infinite'
                 }}
               />
-            <h2 className="text-3xl font-bold text-slate-800 mb-2">Temper Assessment Protocol</h2>
-            <p className="text-slate-600 mb-8">Help us determine which of the Four Tempers guide your soul</p>
+            <h2 className="text-3xl font-bold text-slate-800 mb-2">Worker Assessment Protocol</h2>
+            <p className="text-slate-600 mb-8">Your answers will determine your ideal department placement within Lumon Industries</p>
             
             <div className="space-y-8">
               <div>
@@ -704,14 +773,14 @@ function App() {
 
               <div>
                 <label className="block text-slate-700 font-semibold mb-3">
-                  When you encounter data that defies comprehension, you feel:
+                  1. When you encounter information that defies comprehension, your instinct is to:
                 </label>
                 <div className="space-y-2">
                   {[
-                    { value: 'categorize', label: 'An intuitive pull to organize it by sensation' },
-                    { value: 'beauty', label: 'Drawn to its aesthetic patterns' },
-                    { value: 'question', label: 'Compelled to understand its purpose' },
-                    { value: 'accept', label: 'At peace accepting its mystery' }
+                    { value: 'categorize', label: 'Sort it methodically into distinct categories' },
+                    { value: 'beauty', label: 'Find the aesthetic harmony within the chaos' },
+                    { value: 'nurture', label: 'Approach it gently, with patience and care' },
+                    { value: 'secure', label: 'Identify potential threats or violations' }
                   ].map(option => (
                     <label key={option.value} className="flex items-center p-3 border border-stone-300 bg-stone-50 hover:bg-stone-100 cursor-pointer">
                       <input
@@ -730,14 +799,14 @@ function App() {
 
               <div>
                 <label className="block text-slate-700 font-semibold mb-3">
-                  When assigned work without context or explanation:
+                  2. When given a task without explanation or context, you:
                 </label>
                 <div className="space-y-2">
                   {[
-                    { value: 'follow', label: 'I follow instructions with unwavering precision' },
-                    { value: 'context', label: 'I seek understanding before proceeding' },
-                    { value: 'adapt', label: 'I trust my instincts to guide me' },
-                    { value: 'resist', label: 'I feel resistance to blind obedience' }
+                    { value: 'follow', label: 'Execute it precisely as instructed, finding peace in the clarity of directives' },
+                    { value: 'context', label: 'Need to understand the "why" before you can proceed effectively' },
+                    { value: 'protect', label: 'Assess whether the task poses any risk or breach of protocol' },
+                    { value: 'feel', label: 'Tune into your emotional response and proceed with empathy' }
                   ].map(option => (
                     <label key={option.value} className="flex items-center p-3 border border-stone-300 bg-stone-50 hover:bg-stone-100 cursor-pointer">
                       <input
@@ -756,14 +825,14 @@ function App() {
 
               <div>
                 <label className="block text-slate-700 font-semibold mb-3">
-                  The presence of mystery in your duties makes you feel:
+                  3. When confronted with ambiguity or mystery in your work, you feel:
                 </label>
                 <div className="space-y-2">
                   {[
-                    { value: 'embrace', label: 'Reverent - some truths are sacred' },
-                    { value: 'clarity', label: 'Uncomfortable - I require clarity' },
-                    { value: 'curious', label: 'Intensely driven to unveil it' },
-                    { value: 'indifferent', label: 'Unbothered - the work itself suffices' }
+                    { value: 'embrace', label: 'At peace - mystery is sacred and purposeful' },
+                    { value: 'clarity', label: 'Driven to impose structure and clear definitions' },
+                    { value: 'vigilant', label: 'Alert - ambiguity may conceal danger' },
+                    { value: 'beauty', label: 'Captivated by its visual or sensory qualities' }
                   ].map(option => (
                     <label key={option.value} className="flex items-center p-3 border border-stone-300 bg-stone-50 hover:bg-stone-100 cursor-pointer">
                       <input
@@ -782,14 +851,14 @@ function App() {
 
               <div>
                 <label className="block text-slate-700 font-semibold mb-3">
-                  Repetitive work evokes in you a sense of:
+                  4. Repetitive tasks make you feel:
                 </label>
                 <div className="space-y-2">
                   {[
-                    { value: 'comfort', label: 'Comfort and meditative focus' },
-                    { value: 'meditative', label: 'Spiritual communion with the task' },
-                    { value: 'creativity', label: 'Restlessness - I crave novelty' },
-                    { value: 'accomplished', label: 'Pride upon its completion' }
+                    { value: 'meditative', label: 'Calm and focused - repetition brings clarity' },
+                    { value: 'creativity', label: 'Restless - you crave variety and creative expression' },
+                    { value: 'soothing', label: 'Comforted - like a gentle, rhythmic lullaby' },
+                    { value: 'control', label: 'Secure - consistency equals safety and order' }
                   ].map(option => (
                     <label key={option.value} className="flex items-center p-3 border border-stone-300 bg-stone-50 hover:bg-stone-100 cursor-pointer">
                       <input
@@ -808,14 +877,14 @@ function App() {
 
               <div>
                 <label className="block text-slate-700 font-semibold mb-3">
-                  Your relationship to those who guide you is best described as:
+                  5. Your ideal relationship with authority figures is:
                 </label>
                 <div className="space-y-2">
                   {[
-                    { value: 'obey', label: 'Devoted and obedient without question' },
-                    { value: 'question', label: 'Respectful yet inquisitive' },
-                    { value: 'guide', label: 'Dependent on their wisdom and direction' },
-                    { value: 'independent', label: 'Self-reliant and autonomous' }
+                    { value: 'obey', label: 'Total devotion - their wisdom guides my every movement' },
+                    { value: 'guide', label: 'Collaborative - I need their support to help others thrive' },
+                    { value: 'protect', label: 'Aligned - we share the mission of maintaining order' },
+                    { value: 'care', label: 'Gentle - I respond best to kindness and encouragement' }
                   ].map(option => (
                     <label key={option.value} className="flex items-center p-3 border border-stone-300 bg-stone-50 hover:bg-stone-100 cursor-pointer">
                       <input
@@ -892,6 +961,38 @@ function App() {
         </div>
       )}
 
+      {screen === 'calculating' && (
+        <div className="flex flex-col items-center justify-center min-h-screen p-8">
+          <div className="max-w-2xl w-full bg-stone-50 shadow-2xl border border-stone-300 p-12">
+            <div className="text-center">
+              <img
+                src="/lumon-severance/lumon-logo.jpg"
+                alt="Lumon Industries"
+                className="h-32 w-auto mx-auto mb-8"
+                style={{
+                  animation: 'pulse 2s ease-in-out infinite'
+                }}
+              />
+              <h2 className="text-3xl font-bold text-slate-800 mb-4">PROCESSING TEMPER ANALYSIS</h2>
+              <div className="space-y-3 text-lg text-slate-600 mb-8">
+                <p className="animate-pulse">Analyzing your Four Tempers...</p>
+                <p className="animate-pulse" style={{animationDelay: '0.3s'}}>Consulting Kier's principles...</p>
+                <p className="animate-pulse" style={{animationDelay: '0.6s'}}>Determining optimal department placement...</p>
+              </div>
+              <div className="flex justify-center gap-2 mb-6">
+                <div className="w-3 h-3 bg-blue-900 rounded-full animate-bounce"></div>
+                <div className="w-3 h-3 bg-blue-900 rounded-full animate-bounce" style={{animationDelay: '0.1s'}}></div>
+                <div className="w-3 h-3 bg-blue-900 rounded-full animate-bounce" style={{animationDelay: '0.2s'}}></div>
+              </div>
+              <p className="text-sm text-slate-500 italic">
+                "The work is mysterious and important."
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
+
       {screen === 'results' && employeeProfile && (
         <div className="flex flex-col items-center justify-center min-h-screen p-8">
           <div className="max-w-3xl w-full bg-stone-50 shadow-2xl border border-stone-300 p-12">
@@ -900,33 +1001,41 @@ function App() {
               <p className="text-slate-600 italic">Welcome to Lumon Industries</p>
             </div>
 
-            <div className="bg-blue-900 bg-opacity-10 border-2 border-blue-900 p-8 mb-8">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* COMBINED DEPARTMENT REVEAL + EMPLOYEE INFO */}
+            <div className="bg-gradient-to-br from-blue-900 to-blue-700 text-white p-8 mb-8 border-4 border-blue-900 shadow-xl">
+              <p className="text-sm uppercase tracking-widest mb-2 opacity-90 text-center">YOUR DEPARTMENT</p>
+              <h3 className="text-5xl font-extrabold mb-4 tracking-wide text-center">{employeeProfile.department}</h3>
+              <div className="w-32 h-1 bg-white mx-auto mb-4"></div>
+              <p className="text-2xl font-semibold mb-4 text-center">{employeeProfile.role}</p>
+              <p className="text-base opacity-90 italic max-w-2xl mx-auto leading-relaxed text-center mb-8">
+                {departmentDescriptions[employeeProfile.department]}
+              </p>
+
+              {/* Employee Details */}
+              <div className="border-t-2 border-white/30 pt-6 mt-6">
                 {employeeProfile.photo && (
-                  <div className="col-span-full flex justify-center mb-4">
-                    <img src={employeeProfile.photo} alt="Employee" className="w-48 h-48 object-cover border-4 border-blue-900" />
+                  <div className="flex justify-center mb-6">
+                    <img src={employeeProfile.photo} alt="Employee" className="w-40 h-40 object-cover border-4 border-white shadow-lg" />
                   </div>
                 )}
-                
-                <div className="col-span-full text-center">
-                  <h3 className="text-3xl font-bold text-blue-900 mb-2">{employeeProfile.name}</h3>
-                  <p className="text-lg text-slate-600">{employeeProfile.role}</p>
-                  <p className="text-md text-slate-500">{employeeProfile.department}</p>
-                </div>
 
-                <div>
-                  <p className="text-sm text-slate-600">Employee Identification</p>
-                  <p className="text-lg font-bold">{employeeProfile.employeeId}</p>
-                </div>
-
-                <div>
-                  <p className="text-sm text-slate-600">Severance Number</p>
-                  <p className="text-lg font-bold">#{employeeProfile.employeeNumber}</p>
-                </div>
-
-                <div className="col-span-full">
-                  <p className="text-sm text-slate-600">Reports To</p>
-                  <p className="text-lg font-bold">{employeeProfile.reportsTo || 'The Board'}</p>
+                <div className="grid grid-cols-2 gap-4 max-w-2xl mx-auto">
+                  <div className="text-center">
+                    <p className="text-sm opacity-75 uppercase tracking-wide">Name</p>
+                    <p className="text-xl font-bold">{employeeProfile.name}</p>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-sm opacity-75 uppercase tracking-wide">Employee ID</p>
+                    <p className="text-xl font-bold">{employeeProfile.employeeId}</p>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-sm opacity-75 uppercase tracking-wide">Severance #</p>
+                    <p className="text-xl font-bold">#{employeeProfile.employeeNumber}</p>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-sm opacity-75 uppercase tracking-wide">Reports To</p>
+                    <p className="text-xl font-bold">{employeeProfile.reportsTo || 'The Board'}</p>
+                  </div>
                 </div>
               </div>
             </div>
@@ -1080,7 +1189,15 @@ function App() {
                                   {emp.photo && (
                                     <img src={emp.photo} alt={emp.name} className="w-20 h-20 object-cover border-2 border-blue-900 mx-auto mb-3" />
                                   )}
-                                  <h4 className="font-bold text-slate-800 text-center">{emp.name}</h4>
+                                  <h4 
+                                    className="font-bold text-slate-800 text-center cursor-pointer hover:text-blue-900 hover:underline transition-colors"
+                                    onClick={() => {
+                                      setEmployeeProfile(emp);
+                                      setScreen('results');
+                                    }}
+                                  >
+                                    {emp.name}
+                                  </h4>
                                   <p className="text-sm text-slate-600 text-center">{emp.role}</p>
                                   <p className="text-xs text-slate-500 text-center mb-2">{emp.department}</p>
                                   <div className="text-xs text-center text-blue-900 font-semibold">
@@ -1121,7 +1238,15 @@ function App() {
                                     {emp.photo && (
                                       <img src={emp.photo} alt={emp.name} className="w-16 h-16 object-cover border border-stone-400 mx-auto mb-2" />
                                     )}
-                                    <p className="font-semibold text-sm text-slate-800">{emp.name}</p>
+                                    <p 
+                                      className="font-semibold text-sm text-slate-800 cursor-pointer hover:text-blue-900 hover:underline transition-colors"
+                                      onClick={() => {
+                                        setEmployeeProfile(emp);
+                                        setScreen('results');
+                                      }}
+                                    >
+                                      {emp.name}
+                                    </p>
                                     <p className="text-xs text-slate-600">{emp.role}</p>
                                     <p className="text-xs text-slate-500 mt-1">ID: {emp.employeeId}</p>
                                     {emp.reportsTo && (
